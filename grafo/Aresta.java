@@ -1,21 +1,21 @@
 package grafo;
 
 public class Aresta<T> {
-    private Integer peso;
+    private String peso;
     private Vertice<T> inicio;
     private Vertice<T> fim;
 
-    public Aresta(Integer peso, Vertice<T> inicio, Vertice<T> fim){
+    public Aresta(String peso, Vertice<T> inicio, Vertice<T> fim){
         this.peso = peso;
         this.inicio = inicio;
         this.fim = fim;
     }
 
-    public Integer getPeso(){
+    public String getPeso(){
         return peso;
     }
 
-    public void setPeso(Integer peso){
+    public void setPeso(String peso){
         this.peso = peso;
     }
 
