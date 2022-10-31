@@ -3,46 +3,27 @@ package grafo;
 import java.util.ArrayList;
 
 public class Vertice<T> {
-    private String posicao;
-    private T cidade;
-    private ArrayList<Aresta<T>> arestasEntrada;
-    private ArrayList<Aresta<T>> arestasSaida;
+    private T valor;
+    private ArrayList<Aresta<T>> destinos;
 
-    public Vertice(String posicao, T cidade){
-        this.posicao = posicao;
-        this.cidade = cidade;
-        this.arestasEntrada =  new ArrayList<Aresta<T>>();
-        this.arestasSaida =  new ArrayList<Aresta<T>>();
+    public Vertice(T valor){
+        this.valor = valor;
+        this.destinos =  new ArrayList<Aresta<T>>();
     }
 
-    public String getPosicao(){
-        return posicao;
+    public T getValor(){
+        return valor;
     }
 
-    public void setPosicao(String posicao){
-        this.posicao = posicao;
+    public void setValor(T valor){
+        this.valor = valor;
     }
 
-    public T getCidade(){
-        return cidade;
+    public void adicionarDestino(Aresta<T> aresta){
+        this.destinos.add(aresta);
     }
 
-    public void setCidade(T cidade){
-        this.cidade = cidade;
-    }
-
-    public void adicionarArestaEntrada(Aresta<T> aresta){
-        this.arestasEntrada.add(aresta);
-    }
-
-    public void adicionarArestaSaida(Aresta<T> aresta){
-        this.arestasSaida.add(aresta);
-    }
-
-    public ArrayList<Aresta<T>> getArestasEntrada(){
-        return arestasEntrada;
-    }
-    public ArrayList<Aresta<T>> getArestasSaida(){
-        return arestasSaida;
+    public ArrayList<Aresta<T>> getDestinos(){
+        return destinos;
     }
 }

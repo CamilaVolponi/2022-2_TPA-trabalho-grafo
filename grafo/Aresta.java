@@ -1,37 +1,33 @@
 package grafo;
 
 public class Aresta<T> {
-    private String peso;
-    private Vertice<T> inicio;
-    private Vertice<T> fim;
+    private Float peso;
+    private Vertice<T> destino;
 
-    public Aresta(String peso, Vertice<T> inicio, Vertice<T> fim){
+    public Aresta(Float peso, Vertice<T> destino){
         this.peso = peso;
-        this.inicio = inicio;
-        this.fim = fim;
+        this.destino = destino;
     }
 
-    public String getPeso(){
+    public Float getPeso(){
         return peso;
     }
 
-    public void setPeso(String peso){
+    public void setPeso(Float peso){
         this.peso = peso;
     }
 
-    public Vertice<T> getInicio(){
-        return inicio;
+    public Vertice<T> getDestino(){
+        return destino;
     }
 
-    public void setInicio(Vertice<T> inicio){
-        this.inicio = inicio;
+    public void setDestino(Vertice<T> destino){
+        this.destino = destino;
     }
 
-    public Vertice<T> getFim(){
-        return fim;
-    }
-
-    public void setFim(Vertice<T> fim){
-        this.fim = fim;
+    @Override
+    public String toString() {
+        // TODO Auto-generated method stub
+        return destino.getValor() + "; peso: " + this.peso;
     }
 }

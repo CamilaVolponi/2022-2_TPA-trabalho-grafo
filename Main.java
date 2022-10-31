@@ -2,26 +2,31 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
+import grafo.Cidade;
 import grafo.Grafo;
 import grafo.Vertice;
 import util.Leitor;
 
 public class Main {
     public static void main(String[] args) throws IOException{        
-        Grafo<String> grafo = new Grafo<String>();
+        Grafo<Cidade> grafo = new Grafo<Cidade>();
         try {
             lerGrafo("entrada.txt", grafo);
             
-            int selection;
+            int selection, codCidade;
             do {
                 printMenu();
                 selection = getSelection();
                 switch (selection) {
                     case 1:
-                        grafo.obterCidadesVisinhas();
+                        System.out.println("Qual o codigo da cidade que deseja? ");
+                        codCidade = Leitor.getLeitor().nextInt();
+                        grafo.obterCidadesVisinhas(new Cidade(codCidade, ""));
                         break;
                     case 2:
-                        //METODO OBTER CAMINHOS A PARTIR DA CIDADE
+                        System.out.println("De qual o codigo da cidade que deseja? ");
+                        codCidade = Leitor.getLeitor().nextInt();
+                        grafo.obterCaminhos(new Cidade(codCidade, ""));
                         break;
                     case 3:
                         //METODO SAIR
@@ -39,7 +44,7 @@ public class Main {
         System.out.println("=================MENU=================");
         System.out.println("1 - Obter cidades vizinhas");
         System.out.println("2 - Obter todos os caminhos a partir de uma cidade");
-        System.out.println("5 - Sair");
+        System.out.println("3 - Sair");
         System.out.println("======================================");
     } 
     
@@ -48,7 +53,7 @@ public class Main {
         return Leitor.getLeitor().nextInt();
     }
 
-    public static void lerGrafo(String path, Grafo<String> grafo) throws IOException {
+    public static void lerGrafo(String path, Grafo<Cidade> grafo) throws IOException {
 		BufferedReader buffRead = new BufferedReader(new FileReader(path));
 		String linha = "";
 	
@@ -58,24 +63,24 @@ public class Main {
 			linha = buffRead.readLine();
             String[] line = linha.split(";");
 
-			String posicao = line[0];
+			int cod = Integer.parseInt(line[0]);
             String cidade = line[1];
-            Vertice<String> vertice = new Vertice<String>(posicao,cidade);
+            Vertice<Cidade> vertice = new Vertice<Cidade>(new Cidade(cod,cidade));
 			grafo.adicionarVertice(vertice);
 		}
 
-		for(int i = 1; i < qtdCidades+1; i++){
+		for(int i = 1; i < qtdCidades + 1; i++){
             linha = buffRead.readLine();
 			if(linha != null){
-                for(int j = 1; j < qtdCidades+1; j++){
-                    String[] line = linha.split(";");
+                String[] line = linha.split(";");
 
-                    for(int k = 0; k < qtdCidades; k++){
-                        String peso = line[k];
+                for(int k = 0; k < qtdCidades; k++){
+                    float peso = Float.parseFloat((line[k]).replaceAll(",", "."));
 
-                        if(!peso.equals("0,00")){
-                            grafo.adicionarAresta(peso, i + "", (k + 1) + "");
-                        }
+                    if(peso != 0){
+                        Cidade origem = new Cidade(i,"");
+                        Cidade destino = new Cidade((k+1),"");
+                        grafo.adicionarAresta(peso, origem, destino);
                     }
                 }
             }

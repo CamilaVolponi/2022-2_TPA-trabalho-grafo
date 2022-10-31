@@ -1,91 +1,76 @@
 package grafo;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.Scanner;
-
-import util.Leitor;
+// import java.util.Hashtable;
 
 public class Grafo<T>{
     private ArrayList<Vertice<T>> vertices;
-    private ArrayList<Aresta<T>> arestas;
     // T = String
     //private ArrayList<Aresta<Vertice<String>>>
 
     public Grafo(){
         this.vertices =  new ArrayList<Vertice<T>>();
-        this.arestas =  new ArrayList<Aresta<T>>();
     }
 
     public void adicionarVertice(Vertice<T> vertice){
         this.vertices.add(vertice);
     }
 
-    public void adicionarAresta(String peso, T vInicio, T vFim){
-        Vertice<T> inicio = this.getVertice(vInicio);
-        Vertice<T> fim = this.getVertice(vFim);
-        Aresta<T> aresta = new Aresta<T>(peso, inicio, fim);
-        inicio.adicionarArestaSaida(aresta);
-        fim.adicionarArestaEntrada(aresta);
-        this.arestas.add(aresta);
-    }
-
     public Vertice<T> getVertice(T dado){
-        Vertice<T> vertice = null;
-        for(int i=0; i < this.vertices.size(); i++){
-            if (this.vertices.get(i).getPosicao().equals(dado)){
-                vertice = this.vertices.get(i);
-                break;
+        for(Vertice<T> vert: this.vertices){
+            if(vert.getValor().equals(dado)){
+                return vert;
             }
         }
-        return vertice;
+        return null;
     }
 
-    public void obterCidadesVisinhas(){
-        System.out.println("Qual o codigo da cidade que deseja? ");
-        String codCidade = Leitor.getLeitor().next();
-        
+    public void adicionarAresta(Float peso, T vInicio, T vFim){
+        Vertice<T> origem = this.getVertice(vInicio);
+        Vertice<T> destino = this.getVertice(vFim);
+        origem.adicionarDestino(new Aresta<T>(peso, destino));
+    }
+
+    public void obterCidadesVisinhas(T dado){        
         for(Vertice<T> vertice: vertices){
-            if(codCidade.equals(vertice.getPosicao())){
-                System.out.println("Cidade escolhida:" + (String) vertice.getCidade());
-                Hashtable<Vertice<T>, String> caminhos = new Hashtable<Vertice<T>, String>();
-                for(Aresta<T> aresta: vertice.getArestasEntrada()){
-                    /*
-                    Quer dizer que a aresta que é adjacente ao vértice atual
-                    está no início da aresta
-                    */
-                    if(!caminhos.containsKey(aresta.getInicio())){
-                        caminhos.put(aresta.getInicio(), aresta.getPeso());
-                    }
+            if(vertice.getValor().equals(dado)){
+                System.out.println("Cidade escolhida:" + vertice.getValor());
+                for(Aresta<T> aresta: vertice.getDestinos()){
+                    System.out.println(aresta);
                 }
-                for(Aresta<T> aresta: vertice.getArestasSaida()){
-                    /*
-                    Quer dizer que a aresta que é adjacente ao vértice atual
-                    está no fim da aresta
-                    */
-                    if(!caminhos.containsKey(aresta.getFim())){
-                        caminhos.put(aresta.getInicio(), aresta.getPeso());
-                    }
-                }
-
-                caminhos.forEach(
-                    (Vertice<T> v, String p) -> System.out.println("Codigo: " + v.getPosicao() + "; Cidade: " + (String) v.getCidade() + "; Peso: " + p));
-                }
-        }
-    } 
-
-    public void obterCaminhos(){
-        Scanner scanner = new Scanner(System.in);
-        
-        System.out.println("Qual o codigo da cidade que deseja? ");
-        String codCidade = scanner.next();
-        
-        for(Vertice<T> vertice: vertices){
-            if(codCidade.equals(vertice.getPosicao())){
-
             }
         }
+    }    
 
-        scanner.close();
+    public void obterCaminhos(T dado){
+        ArrayList<Vertice<T>> marcados = new ArrayList<Vertice<T>>();
+        ArrayList<Vertice<T>> fila = new ArrayList<Vertice<T>>();
+
+        Vertice<T> atual = getVertice(dado);
+        fila.add(atual);
+        //Pego o primeiro vértice como ponto de partida e coloco na fila
+        //Poderia escolher qualquer outro...
+        //Mas note que dependendo do grafo pode ser que você não caminhe por todos os vétices
+
+        //Enquanto houver vertice na fila...
+        while (fila.size()>0){
+            //Pego o próximo da fila, marco como visitado e o imprimo
+            atual = fila.get(0);
+            fila.remove(0);
+            marcados.add(atual);
+            System.out.println(atual.getValor());
+            //Depois pego a lista de adjacencia do nó e se o nó adjacente ainda
+            //não tiver sido visitado, o coloco na fila
+            
+            ArrayList<Aresta<T>> destinos = atual.getDestinos();
+            Vertice<T> proximo;
+
+            for (int i=0; i<destinos.size();i++){
+                proximo = destinos.get(i).getDestino();
+                if(!marcados.contains(proximo)){
+                    fila.add(proximo);
+                }
+            }
+        }
     }
 }
