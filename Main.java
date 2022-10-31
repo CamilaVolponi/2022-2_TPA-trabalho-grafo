@@ -2,14 +2,11 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-import java.util.Scanner;
-
 import grafo.Grafo;
 import grafo.Vertice;
+import util.Leitor;
 
 public class Main {
-    private static Scanner entrada = new Scanner(System.in);
-
     public static void main(String[] args) throws IOException{        
         Grafo<String> grafo = new Grafo<String>();
         try {
@@ -21,7 +18,7 @@ public class Main {
                 selection = getSelection();
                 switch (selection) {
                     case 1:
-                        //METODO OBTER CIDADES VIZINHAS
+                        grafo.obterCidadesVisinhas();
                         break;
                     case 2:
                         //METODO OBTER CAMINHOS A PARTIR DA CIDADE
@@ -47,8 +44,8 @@ public class Main {
     } 
     
     private static int getSelection(){
-        System.out.println("Escolha uma opçao: ");
-        return entrada.nextInt();
+        System.out.println("Escolha uma opcao: ");
+        return Leitor.getLeitor().nextInt();
     }
 
     public static void lerGrafo(String path, Grafo<String> grafo) throws IOException {
@@ -75,9 +72,9 @@ public class Main {
 
                     for(int k = 0; k < qtdCidades; k++){
                         String peso = line[k];
-                    
-                        if(peso != "0,00"){
-                            grafo.adicionarAresta(peso, i + "", j + "");
+
+                        if(!peso.equals("0,00")){
+                            grafo.adicionarAresta(peso, i + "", (k + 1) + "");
                         }
                     }
                 }
