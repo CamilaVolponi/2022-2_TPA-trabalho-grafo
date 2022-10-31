@@ -1,0 +1,5 @@
+https://www.geeksforgeeks.org/hashtable-contains-method-in-java/#:~:text=Hashtable.,keys%20present%20in%20the%20Hashtable.&text=Parameters%3A%20The%20method%20accepts%20one,mapping%20is%20to%20be%20verified.
+
+https://www.geeksforgeeks.org/hashtable-foreach-method-in-java-with-examples/
+
+https://www.geeksforgeeks.org/hashtable-in-java/#:~:text=The%20Hashtable%20class%20implements%20a,method%20and%20the%20equals%20method.
