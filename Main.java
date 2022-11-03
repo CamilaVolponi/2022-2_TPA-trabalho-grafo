@@ -17,14 +17,18 @@ public class Main {
             do {
                 printMenu();
                 selection = getSelection();
+                if(!(selection >= 1 && selection <= 3)){
+                    System.out.println("\n!! Opcao informada nao existe, digite uma opcao valida. !!\n");
+                    continue;
+                }
                 switch (selection) {
                     case 1:
-                        System.out.println("Qual o codigo da cidade que deseja? ");
+                        System.out.println("> Qual o codigo da cidade que deseja? ");
                         codCidade = Leitor.getLeitor().nextInt();
-                        grafo.obterCidadesVisinhas(new Cidade(codCidade, ""));
+                        grafo.obterCidadesVizinhas(new Cidade(codCidade, ""));
                         break;
                     case 2:
-                        System.out.println("De qual o codigo da cidade que deseja? ");
+                        System.out.println("> De qual o codigo da cidade que deseja? ");
                         codCidade = Leitor.getLeitor().nextInt();
                         grafo.obterCaminhos(new Cidade(codCidade, ""));
                         break;
@@ -34,7 +38,7 @@ public class Main {
                     default:
                         break;
                 }
-            } while(selection != 5);
+            } while(selection != 3);
         } catch (IOException e) {
             System.out.println("Erro ao abrir o arquivo");
         }

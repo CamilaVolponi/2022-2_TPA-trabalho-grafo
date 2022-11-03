@@ -18,6 +18,7 @@ public class Grafo<T>{
 
     public Vertice<T> getVertice(T dado){
         for(Vertice<T> vert: this.vertices){
+            // Verifica se o vertice atual contém o Objeto igual ao que está sendo procurado
             if(vert.getValor().equals(dado)){
                 return vert;
             }
@@ -31,10 +32,12 @@ public class Grafo<T>{
         origem.adicionarDestino(new Aresta<T>(peso, destino));
     }
 
-    public void obterCidadesVisinhas(T dado){        
+    public void obterCidadesVizinhas(T dado){        
         for(Vertice<T> vertice: vertices){
+            // Verifica se o vertice atual contém a Cidade igual a que está sendo procurada
             if(vertice.getValor().equals(dado)){
                 System.out.println("Cidade escolhida:" + vertice.getValor());
+                // Imprime todas as cidades vizinhas a esse cidade
                 for(Aresta<T> aresta: vertice.getDestinos()){
                     System.out.println(aresta);
                 }
@@ -67,10 +70,10 @@ public class Grafo<T>{
 
             for (int i=0; i<destinos.size();i++){
                 proximo = destinos.get(i).getDestino();
-                if(!marcados.contains(proximo)){
+                if(!marcados.contains(proximo) && !fila.contains(proximo)){
                     fila.add(proximo);
                 }
             }
         }
-    }
+    }    
 }
