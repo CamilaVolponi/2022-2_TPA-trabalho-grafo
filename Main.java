@@ -8,53 +8,69 @@ import grafo.Vertice;
 import util.Leitor;
 
 public class Main {
+    static Grafo<Cidade> grafo = new Grafo<Cidade>();
     public static void main(String[] args) throws IOException{        
-        Grafo<Cidade> grafo = new Grafo<Cidade>();
         try {
             lerGrafo("entrada.txt", grafo);
             
-            int selection, codCidade;
+            int selection, codCidade, codOrigem, codDestino;
             do {
                 printMenu();
                 selection = getSelection();
-                if(!(selection >= 1 && selection <= 3)){
-                    System.out.println("\n!! Opcao informada nao existe, digite uma opcao valida. !!\n");
-                    continue;
-                }
                 switch (selection) {
                     case 1:
-                        System.out.println("> Qual o codigo da cidade que deseja? ");
+                        System.out.println("Qual o codigo da cidade que deseja? ");
                         codCidade = Leitor.getLeitor().nextInt();
                         grafo.obterCidadesVizinhas(new Cidade(codCidade, ""));
                         break;
                     case 2:
-                        System.out.println("> De qual o codigo da cidade que deseja? ");
+                        System.out.println("De qual o codigo da cidade que deseja? ");
                         codCidade = Leitor.getLeitor().nextInt();
                         grafo.obterCaminhos(new Cidade(codCidade, ""));
                         break;
                     case 3:
+                        System.out.println("Qual o codigo da cidade de origem? ");
+                        codOrigem = Leitor.getLeitor().nextInt();
+                        System.out.println("Qual o codigo da cidade de destino? ");
+                        codDestino = Leitor.getLeitor().nextInt();
+                        Cidade origem = verificaSeCidadeExiste(codOrigem);
+                        Cidade destino = verificaSeCidadeExiste(codDestino);
+                        if(origem != null && destino != null){
+                            grafo.calcularCaminhoMinimo(origem, destino);
+                        }else{
+                            System.out.println("Alguma cidade informada não existe!");
+                        }                        
+                        break;
+                    case 4:
                         //METODO SAIR
                         break;
                     default:
                         break;
                 }
-            } while(selection != 3);
+            } while(selection != 5);
         } catch (IOException e) {
             System.out.println("Erro ao abrir o arquivo");
         }
     }
 
+
     private static void printMenu(){
         System.out.println("=================MENU=================");
         System.out.println("1 - Obter cidades vizinhas");
         System.out.println("2 - Obter todos os caminhos a partir de uma cidade");
-        System.out.println("3 - Sair");
+        System.out.println("3 - Calcular caminho minimo");
+        System.out.println("4 - Sair");
         System.out.println("======================================");
     } 
     
     private static int getSelection(){
         System.out.println("Escolha uma opcao: ");
         return Leitor.getLeitor().nextInt();
+    }
+
+    public static Cidade verificaSeCidadeExiste(int codCidade){
+        Vertice<Cidade> vert = grafo.getVertice(new Cidade(codCidade, ""));
+        return vert != null ? vert.getValor() : null;
     }
 
     public static void lerGrafo(String path, Grafo<Cidade> grafo) throws IOException {

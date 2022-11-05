@@ -75,5 +75,89 @@ public class Grafo<T>{
                 }
             }
         }
-    }    
+    }
+    
+    public void calcularCaminhoMinimo(T origem, T destino){
+        // imprimir na tela o caminho minimo da origem para o destino e a distancia total entre os dois
+        // Obter todos os vertices para ligar a distancia e o predececor a um vertice
+        ArrayList<No<Vertice<T>>> nos = new ArrayList<No<Vertice<T>>>();
+        // Povoa a lista de nós com todos os Vertices do grafo de cidades
+        No<Vertice<T>> noOrigem = null, noDestino = null;
+        for(Vertice<T> vertice: vertices){
+            if(vertice.getValor().equals(origem)){
+                // Marcar quem é o primeiro
+                noOrigem = new No<Vertice<T>>(vertice, No.PRED_ORIGEM);
+                nos.add(noOrigem);
+            } else if(vertice.getValor().equals(destino)){
+                // Marcar quem é o primeiro
+                noDestino = new No<Vertice<T>>(vertice);
+                nos.add(noDestino);
+            } else {
+                nos.add(new No<Vertice<T>>(vertice));
+            }
+        }
+        ArrayList<No<Vertice<T>>> rotulados = new ArrayList<No<Vertice<T>>>();
+        No<Vertice<T>> noAtual = noOrigem;
+        while(this.vertices.size() < rotulados.size() || !rotulados.contains(noDestino)){
+            // Adiciona o no atual a lista de rotulados
+            rotulados.add(noAtual);
+            // Pega distancia do no atual
+            float distanciaNoAtual = noAtual.getDistancia();
+            // Pega aresta que liga aos nós de destino
+            for(Aresta<T> aresta : noAtual.getValor().getDestinos()){
+                // Percorre cada vertice vizinho (Destino, nós adjacentes)
+                Vertice<T> vert = aresta.getDestino();
+                int indexDoNoDestino = -1;
+                // Obtem o index do nó de destino
+                for(int index = 0; index < nos.size(); index++){
+                    No<Vertice<T>> no = nos.get(index);
+                    if(no.getValor().equals(vert)){
+                        indexDoNoDestino = index;
+                        break;
+                    }
+                }
+                // Obtem o index do nó atual
+                int indexDoNoAtual = nos.indexOf(noAtual);
+                // Obtem o nó de destino do nó atual
+                No<Vertice<T>> noDestinoDoNoAtual = nos.get(indexDoNoDestino);
+                // Obtem a possível nova distância para o nó de destino
+                float novaDistancia = distanciaNoAtual + aresta.getPeso();
+                // verifica se a distância atual para o nó de destino é maior que a nova distância
+                // Se for troca distância e o predecessor
+                if(noDestinoDoNoAtual.getDistancia() > novaDistancia){
+                    noDestinoDoNoAtual.setDistancia(novaDistancia);
+                    noDestinoDoNoAtual.setPredecessor(indexDoNoAtual);
+                }
+            }
+            No<Vertice<T>> noDeMenorDistancia = null;
+            // Encontra o nó de menor distância que não foi rotulado
+            for(No<Vertice<T>> no: nos){
+                if(!rotulados.contains(no)){
+                    if(noDeMenorDistancia == null){
+                        noDeMenorDistancia = no;
+                    } else {
+                        if(noDeMenorDistancia.getDistancia() > no.getDistancia()){
+                            noDeMenorDistancia = no;
+                        }
+                    }
+                }
+            }
+            noAtual = noDeMenorDistancia;
+        }
+        imprimePredecessor(nos, noDestino, 0, true);
+    }
+
+    private float imprimePredecessor(ArrayList<No<Vertice<T>>> nos, No<Vertice<T>> no, float distanciaTotal, Boolean primeiraChamada){
+        float distanciaTotalGeral = distanciaTotal;
+        if(no.getPredecessor() != No.PRED_ORIGEM){
+            distanciaTotalGeral = imprimePredecessor(nos, nos.get(no.getPredecessor()), distanciaTotal + no.getDistancia(), false);
+        }
+        Vertice<T> vert = no.getValor();
+        System.out.println(vert.getValor());
+        if(primeiraChamada){
+            System.out.println("Distancia total: " + distanciaTotalGeral);
+        }
+        return distanciaTotalGeral;
+    }
+
 }
