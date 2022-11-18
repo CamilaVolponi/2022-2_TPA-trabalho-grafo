@@ -267,7 +267,7 @@ public class Grafo<T>{
 
         // novoVertice será direfente de 'null' se o objeto estiver no grafo
         if(novoVertice != null){
-            novoGrafo.adicionarVertice(novoVertice);
+            novoGrafo.adicionarVertice(novoVertice.clone());
             int tamanhoGrafoAtual = this.vertices.size();
             int tamanhonovoGrafo = novoGrafo.vertices.size();
 
@@ -276,8 +276,12 @@ public class Grafo<T>{
             float valorDaMenorAresta = 0;
             
             float valorNovaAresta = 0;
+            
+            // Hashtable<Hashtable<T, T>, Float> pesoDasArestas = new Hashtable<Hashtable<T,T>, Float>();
 
-            ArrayList<Aresta<T>> listaDeArestasArvoreGeradoraMinima = new ArrayList<Aresta<T>>();
+            ArrayList<T> listaDeOrigens = new ArrayList<T>();
+            ArrayList<T> listaDeDestinos = new ArrayList<T>();
+            ArrayList<Float> listaDePesos = new ArrayList<Float>();
 
             // ArrayList<Vertice<T>> verticesDoGrafoAntigo = this.vertices;
             // Vertice<T> verticeDoGrafoAntigo = null;
@@ -328,19 +332,51 @@ public class Grafo<T>{
                         - logo caso adicionemos aquela aresta, estermos gerando um ciclo
                 */
                 
-                //
-                Vertice<T> verticeDeOrigem = novoGrafo.getVertice(origemDaMenorAresta);
-                verticeDeOrigem.getDestinos().clear();
+                // Adiciona o vértice de destino ao gráfo
+                // o clone teve que ser usado para duplicar as informações, pois quando o algoritmo era rodado mais uma vez as modificação era mantidas
+                // alterando em novoGrafo novo era alterado em grafoAtual também
+                novoGrafo.adicionarVertice(this.getVertice(destinoDaMenorAresta).clone());
 
-                Vertice<T> verticeDeDestinoDaMenorAresta = getVertice(destinoDaMenorAresta);
-                novoGrafo.adicionarVertice(verticeDeDestinoDaMenorAresta);
-                novoGrafo.adicionarAresta(valorDaMenorAresta, origemDaMenorAresta, destinoDaMenorAresta);
+                // Adiciona a Aresta
+                // Hashtable<T, T> origemDestino = new Hashtable<T, T>();
+                // origemDestino.put(origemDaMenorAresta, destinoDaMenorAresta);
+                // pesoDasArestas.put(origemDestino, valorDaMenorAresta);
+                
+                // Adiciona a Aresta v2
+                listaDeOrigens.add(origemDaMenorAresta);
+                listaDeDestinos.add(destinoDaMenorAresta);
+                listaDePesos.add(valorDaMenorAresta);
+
+                // novoGrafo.adicionarAresta(valorDaMenorAresta, origemDaMenorAresta, destinoDaMenorAresta);
                 tamanhonovoGrafo = novoGrafo.vertices.size();
                 
                 // verticesDoGrafoAntigo.add(verticeDoGrafoAntigo);
             }
-            Vertice<T> ultimoVertice = novoGrafo.vertices.get(novoGrafo.vertices.size()-1);
-            ultimoVertice.getDestinos().clear();
+
+            // Remove todas as arestas do novoGrafo
+            for(Vertice<T> vertice: novoGrafo.vertices){
+                vertice.getDestinos().clear();
+            }
+
+            // Preenche as arestas do novoGrafo
+            // for(Hashtable<T,T> _origemDestino: pesoDasArestas.keySet()){
+            //     for(T _origem : _origemDestino.keySet()){
+            //         float pesoAresta = pesoDasArestas.get(_origemDestino);
+            //         T _destino = _origemDestino.get(_origem);
+            //         novoGrafo.adicionarAresta(pesoAresta, _origem, _destino);
+            //     }
+            // }
+
+            // Preenche as arestas do novoGrafo v2
+            float _peso = 0;
+            T _origem, _destino;
+            for(int i = 0; i < listaDeOrigens.size(); i++){
+                _peso = listaDePesos.get(i);
+                _origem = listaDeOrigens.get(i);
+                _destino = listaDeDestinos.get(i);
+                novoGrafo.adicionarAresta(_peso, _origem, _destino);
+            }
+
             return novoGrafo;
         } else {
             return null;

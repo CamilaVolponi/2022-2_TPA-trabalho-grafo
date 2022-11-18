@@ -15,6 +15,7 @@ public class Main {
             
             int selection, codCidade, codOrigem, codDestino;
             Cidade origem, destino;
+            Grafo<Cidade> grafoNovo;
             do {
                 printMenu();
                 selection = getSelection();
@@ -47,7 +48,7 @@ public class Main {
                         codOrigem = Leitor.getLeitor().nextInt();
                         origem = verificaSeCidadeExiste(codOrigem);
                         if(origem != null){
-                            Grafo<Cidade> grafoNovo = grafo.gerarArvoreGeradoraMinima(origem);
+                            grafoNovo = grafo.gerarArvoreGeradoraMinima(origem);
                             if(grafoNovo == null){
                                 System.out.println("A origem não está no grafo!");
                             } else {
