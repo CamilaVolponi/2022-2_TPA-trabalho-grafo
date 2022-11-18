@@ -1,22 +1,19 @@
 package grafo;
 
-public class No<T>{
+public class No_v2<T>{
     private T valor;
     private float distancia;
-    private int predecessor;
+    private No_v2<T> predecessor;
     static final float INFINITO = Float.POSITIVE_INFINITY;
-    static final int PRED_ORIGEM = -1;
 
-    public No(T valor){
+    public No_v2(T valor, Boolean ehOrigem){
         this.valor = valor;
-        this.distancia = INFINITO;
-        this.predecessor = -2;
-    }
-
-    public No(T valor, int predecessor){
-        this.valor = valor;
-        this.distancia = 0;
-        this.predecessor = predecessor;
+        if(ehOrigem){
+            this.distancia = 0;
+        } else {
+            this.distancia = INFINITO;
+        }
+        this.predecessor = null;
     }
 
     public T getValor() {
@@ -30,10 +27,10 @@ public class No<T>{
         this.distancia = distancia;
     }
 
-    public int getPredecessor() {
+    public No_v2<T> getPredecessor() {
         return predecessor;
     }
-    public void setPredecessor(int predecessor) {
+    public void setPredecessor(No_v2<T> predecessor) {
         this.predecessor = predecessor;
     }
 }

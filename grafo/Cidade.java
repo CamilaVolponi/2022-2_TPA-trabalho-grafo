@@ -26,6 +26,7 @@ public class Cidade{
     @Override
     public boolean equals(Object obj) {
         // TODO Auto-generated method stub
+        if(obj == null) return false;
         int cod = ((Cidade) obj).codigo;
         return codigo == cod;
     }

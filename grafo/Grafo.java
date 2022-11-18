@@ -17,6 +17,7 @@ public class Grafo<T>{
     }
 
     public Vertice<T> getVertice(T dado){
+        if(dado == null) return null;
         for(Vertice<T> vert: this.vertices){
             // Verifica se o vertice atual contém o Objeto igual ao que está sendo procurado
             if(vert.getValor().equals(dado)){
@@ -77,6 +78,7 @@ public class Grafo<T>{
         }
     }
     
+    // Usa index em um ArrayList como predecessor de um nó
     public void calcularCaminhoMinimo(T origem, T destino){
         // imprimir na tela o caminho minimo da origem para o destino e a distancia total entre os dois
         // Obter todos os vertices para ligar a distancia e o predececor a um vertice
@@ -133,9 +135,14 @@ public class Grafo<T>{
             // Encontra o nó de menor distância que não foi rotulado
             for(No<Vertice<T>> no: nos){
                 if(!rotulados.contains(no)){
+                    // Se nenhum objeto tiver sido atribuído à variável 'noDeMenorDistancia' quer dizer que ainda não existe nenhum
+                    // nó de menor distância, logo podemos atribir o nó atual para tal
                     if(noDeMenorDistancia == null){
                         noDeMenorDistancia = no;
                     } else {
+                        if(no.getDistancia() == No.INFINITO){
+                            continue;
+                        }
                         if(noDeMenorDistancia.getDistancia() > no.getDistancia()){
                             noDeMenorDistancia = no;
                         }
@@ -144,20 +151,215 @@ public class Grafo<T>{
             }
             noAtual = noDeMenorDistancia;
         }
-        imprimePredecessor(nos, noDestino, 0, true);
+        imprimePredecessor(nos, noDestino, true);
     }
 
-    private float imprimePredecessor(ArrayList<No<Vertice<T>>> nos, No<Vertice<T>> no, float distanciaTotal, Boolean primeiraChamada){
-        float distanciaTotalGeral = distanciaTotal;
+    private void imprimePredecessor(ArrayList<No<Vertice<T>>> nos, No<Vertice<T>> no, Boolean primeiraChamada){
         if(no.getPredecessor() != No.PRED_ORIGEM){
-            distanciaTotalGeral = imprimePredecessor(nos, nos.get(no.getPredecessor()), distanciaTotal + no.getDistancia(), false);
+            imprimePredecessor(nos, nos.get(no.getPredecessor()), false);
         }
         Vertice<T> vert = no.getValor();
+        // Imprime, neste caso, a cidade
         System.out.println(vert.getValor());
         if(primeiraChamada){
-            System.out.println("Distancia total: " + distanciaTotalGeral);
+            System.out.println("Distancia total: " + no.getDistancia());
         }
-        return distanciaTotalGeral;
     }
 
+    /* v2 */
+
+    // Usa endereço de objetos ao invés do index deles
+    public void calcularCaminhoMinimo_v2(T origem, T destino){
+        // imprimir na tela o caminho minimo da origem para o destino e a distancia total entre os dois
+        // Obter todos os vertices para ligar a distancia e o predececor a um vertice
+        ArrayList<No_v2<Vertice<T>>> nos = new ArrayList<No_v2<Vertice<T>>>();
+        // Povoa a lista de nós com todos os Vertices do grafo de cidades
+        No_v2<Vertice<T>> noOrigem = null, noDestino = null;
+        for(Vertice<T> vertice: vertices){
+            if(vertice.getValor().equals(origem)){
+                // Marcar quem é o primeiro
+                noOrigem = new No_v2<Vertice<T>>(vertice, true);
+                nos.add(noOrigem);
+            } else if(vertice.getValor().equals(destino)){
+                noDestino = new No_v2<Vertice<T>>(vertice, false);
+                nos.add(noDestino);
+            } else {
+                nos.add(new No_v2<Vertice<T>>(vertice, false));
+            }
+        }
+        ArrayList<No_v2<Vertice<T>>> rotulados = new ArrayList<No_v2<Vertice<T>>>();
+        No_v2<Vertice<T>> noAtual = noOrigem;
+        while(this.vertices.size() < rotulados.size() || !rotulados.contains(noDestino)){
+            // Adiciona o no atual a lista de rotulados
+            rotulados.add(noAtual);
+            // Pega distancia do no atual
+            float distanciaNoAtual = noAtual.getDistancia();
+            // Pega aresta que liga aos nós de destino
+            for(Aresta<T> aresta : noAtual.getValor().getDestinos()){
+                // Percorre cada vertice vizinho (Destino, nós adjacentes)
+                Vertice<T> vert = aresta.getDestino();
+                // Obtem o index do nó de destino
+                No_v2<Vertice<T>> noDestinoDoNoAtual = null;
+                // Obtem o nó de destino do nó atual
+                for(No_v2<Vertice<T>> noDestinoDoAtual: nos){
+                    if(noDestinoDoAtual.getValor().equals(vert)){
+                        noDestinoDoNoAtual = noDestinoDoAtual;
+                        break;
+                    }
+                }
+                // Obtem a possível nova distância para o nó de destino
+                float novaDistancia = distanciaNoAtual + aresta.getPeso();
+                // verifica se a distância atual para o nó de destino é maior que a nova distância
+                // Se for troca distância e o predecessor
+                if(noDestinoDoNoAtual.getDistancia() > novaDistancia){
+                    noDestinoDoNoAtual.setDistancia(novaDistancia);
+                    noDestinoDoNoAtual.setPredecessor(noAtual);
+                }
+            }
+            No_v2<Vertice<T>> noDeMenorDistancia = null;
+            // Encontra o nó de menor distância que não foi rotulado
+            for(No_v2<Vertice<T>> no: nos){
+                if(!rotulados.contains(no)){
+                    // Se nenhum objeto tiver sido atribuído à variável 'noDeMenorDistancia' quer dizer que ainda não existe nenhum
+                    // nó de menor distância, logo podemos atribir o nó atual para tal
+                    if(noDeMenorDistancia == null){
+                        noDeMenorDistancia = no;
+                    } else {
+                        if(no.getDistancia() == No.INFINITO){
+                            continue;
+                        }
+                        if(noDeMenorDistancia.getDistancia() > no.getDistancia()){
+                            noDeMenorDistancia = no;
+                        }
+                    }
+                }
+            }
+            noAtual = noDeMenorDistancia;
+        }
+        imprimePredecessor_v2(noDestino, true);
+    }
+
+    private void imprimePredecessor_v2(No_v2<Vertice<T>> no, Boolean primeiraChamada){
+        if(no.getPredecessor() != null){
+            imprimePredecessor_v2(no.getPredecessor(), false);
+        }
+        Vertice<T> vert = no.getValor();
+        // Imprime, neste caso, a cidade
+        System.out.println(vert.getValor());
+        if(primeiraChamada){
+            System.out.println("Distancia total: " + no.getDistancia());
+        }
+    }
+
+    //o algoritmo implementado foi Prim
+    public Grafo<T> gerarArvoreGeradoraMinima(T origem){
+        Grafo<T> novoGrafo = new Grafo<T>();
+
+        Vertice<T> novoVertice = null;
+
+        // Verifica se objeto passado como origem já está no grafo
+        for(Vertice<T> vertice: vertices){
+            if(vertice.getValor().equals(origem)){
+                novoVertice = vertice;
+                break;
+            }
+        }
+
+        // novoVertice será direfente de 'null' se o objeto estiver no grafo
+        if(novoVertice != null){
+            novoGrafo.adicionarVertice(novoVertice);
+            int tamanhoGrafoAtual = this.vertices.size();
+            int tamanhonovoGrafo = novoGrafo.vertices.size();
+
+            Boolean achouAresta;
+            T origemDaMenorAresta = null, destinoDaMenorAresta = null;
+            float valorDaMenorAresta = 0;
+            
+            float valorNovaAresta = 0;
+
+            ArrayList<Aresta<T>> listaDeArestasArvoreGeradoraMinima = new ArrayList<Aresta<T>>();
+
+            // ArrayList<Vertice<T>> verticesDoGrafoAntigo = this.vertices;
+            // Vertice<T> verticeDoGrafoAntigo = null;
+
+            // pega menor aresta do que está ligado dentre todos os vértices do novoGrafo
+            while(tamanhonovoGrafo < tamanhoGrafoAtual){
+                achouAresta = false;
+
+                // Loop para achar a menor aresta
+                for(Vertice<T> vertice : novoGrafo.vertices){
+                    for(Aresta<T> novaAresta : vertice.getDestinos()){
+                        valorNovaAresta = novaAresta.getPeso();
+
+                        if(valorNovaAresta == 0) continue;
+
+                        Vertice<T> v = novoGrafo.getVertice(novaAresta.getDestino().getValor());
+
+                        Boolean verticeDeDestinoJaEstaNoGrafoNovo = v != null;
+
+                        if(verticeDeDestinoJaEstaNoGrafoNovo) continue;
+
+                        if(!achouAresta){
+                            origemDaMenorAresta = vertice.getValor();
+                            destinoDaMenorAresta = novaAresta.getDestino().getValor();
+                            valorDaMenorAresta = valorNovaAresta;
+                            achouAresta = true;
+                            // verticeDoGrafoAntigo = vertice;
+                        } else if(valorDaMenorAresta > valorNovaAresta){ // compara antiga menor aresta com a possível nova menor aresta
+                            origemDaMenorAresta = vertice.getValor();
+                            destinoDaMenorAresta = novaAresta.getDestino().getValor();
+                            valorDaMenorAresta = valorNovaAresta;
+                            // verticeDoGrafoAntigo = vertice;
+                        }
+                    }
+                }
+                // Verificar se forma Ciclo ao adicionar aresta
+                /* IDEIA: como estamos adicionando um destino quando vamos adicionar uma aresta
+                          pela lógica, caso o vertice já esteja no grafo, quer dizer que ele já é destino de outro vértice
+                   Por exemplo:
+                        - temos 2 grafos: grafoAtual{1, 2, 3, 4, 5}, grafoNovo{1, 2}
+                        - com a seguinte matriz de adjacência:
+                             0;47;78;65; 0
+                            47; 0;43;81;77
+                            78;43; 0;25;80
+                            65;81;25;0 ;47
+                             0;77;80;47; 0
+                        - pela lógica não é possível adicionar um vertice ao grafo no, caso ele já esteja
+                        - logo caso adicionemos aquela aresta, estermos gerando um ciclo
+                */
+                
+                //
+                Vertice<T> verticeDeOrigem = novoGrafo.getVertice(origemDaMenorAresta);
+                verticeDeOrigem.getDestinos().clear();
+
+                Vertice<T> verticeDeDestinoDaMenorAresta = getVertice(destinoDaMenorAresta);
+                novoGrafo.adicionarVertice(verticeDeDestinoDaMenorAresta);
+                novoGrafo.adicionarAresta(valorDaMenorAresta, origemDaMenorAresta, destinoDaMenorAresta);
+                tamanhonovoGrafo = novoGrafo.vertices.size();
+                
+                // verticesDoGrafoAntigo.add(verticeDoGrafoAntigo);
+            }
+            Vertice<T> ultimoVertice = novoGrafo.vertices.get(novoGrafo.vertices.size()-1);
+            ultimoVertice.getDestinos().clear();
+            return novoGrafo;
+        } else {
+            return null;
+        }
+    }
+
+    public void imprimirArestas() {
+        T origem, destino;
+        float valorAresta;
+        String strSaida;
+        System.out.println("===>Imprimindo Arestas<==");
+        for(Vertice<T> vertice: this.vertices){
+            origem = vertice.getValor();
+            for(Aresta<T> aresta : vertice.getDestinos()){
+                destino = aresta.getDestino().getValor();
+                valorAresta = aresta.getPeso();
+                strSaida = String.format("origem=(%s) === %.2f ==> destino=(%s)", origem, valorAresta, destino);
+                System.out.println(strSaida);
+            }
+        }
+    }
 }
