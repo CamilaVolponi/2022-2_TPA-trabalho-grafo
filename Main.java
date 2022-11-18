@@ -14,6 +14,7 @@ public class Main {
             lerGrafo("entrada.txt", grafo);
             
             int selection, codCidade, codOrigem, codDestino;
+            Cidade origem, destino;
             do {
                 printMenu();
                 selection = getSelection();
@@ -33,15 +34,30 @@ public class Main {
                         codOrigem = Leitor.getLeitor().nextInt();
                         System.out.println("Qual o codigo da cidade de destino? ");
                         codDestino = Leitor.getLeitor().nextInt();
-                        Cidade origem = verificaSeCidadeExiste(codOrigem);
-                        Cidade destino = verificaSeCidadeExiste(codDestino);
+                        origem = verificaSeCidadeExiste(codOrigem);
+                        destino = verificaSeCidadeExiste(codDestino);
                         if(origem != null && destino != null){
-                            grafo.calcularCaminhoMinimo(origem, destino);
+                            grafo.calcularCaminhoMinimo_v2(origem, destino);
+                        }else{
+                            System.out.println("Alguma cidade informada nao existe!");
+                        }                        
+                        break;
+                    case 4:
+                        System.out.println("Qual o codigo da cidade de origem? ");
+                        codOrigem = Leitor.getLeitor().nextInt();
+                        origem = verificaSeCidadeExiste(codOrigem);
+                        if(origem != null){
+                            Grafo<Cidade> grafoNovo = grafo.gerarArvoreGeradoraMinima(origem);
+                            if(grafoNovo == null){
+                                System.out.println("A origem não está no grafo!");
+                            } else {
+                                grafoNovo.imprimirArestas();
+                            }
                         }else{
                             System.out.println("Alguma cidade informada não existe!");
                         }                        
                         break;
-                    case 4:
+                    case 5:
                         //METODO SAIR
                         break;
                     default:
@@ -59,7 +75,8 @@ public class Main {
         System.out.println("1 - Obter cidades vizinhas");
         System.out.println("2 - Obter todos os caminhos a partir de uma cidade");
         System.out.println("3 - Calcular caminho minimo");
-        System.out.println("4 - Sair");
+        System.out.println("4 - Calcular Arvore geradora minima");
+        System.out.println("5 - Sair");
         System.out.println("======================================");
     } 
     
