@@ -55,7 +55,7 @@ public class Main {
                                 grafoNovo.imprimirArestas();
                             }
                         }else{
-                            System.out.println("Alguma cidade informada não existe!");
+                            System.out.println("Alguma cidade informada nao existe!");
                         }                        
                         break;
                     case 5:

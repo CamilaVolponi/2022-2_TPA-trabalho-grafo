@@ -1,12 +1,9 @@
 package grafo;
 
 import java.util.ArrayList;
-// import java.util.Hashtable;
 
 public class Grafo<T>{
     private ArrayList<Vertice<T>> vertices;
-    // T = String
-    //private ArrayList<Aresta<Vertice<String>>>
 
     public Grafo(){
         this.vertices =  new ArrayList<Vertice<T>>();
@@ -265,7 +262,7 @@ public class Grafo<T>{
             }
         }
 
-        // novoVertice será direfente de 'null' se o objeto estiver no grafo
+        // novoVertice será direfente de 'null' se o objeto não estiver no grafo
         if(novoVertice != null){
             novoGrafo.adicionarVertice(novoVertice.clone());
             int tamanhoGrafoAtual = this.vertices.size();
@@ -276,15 +273,10 @@ public class Grafo<T>{
             float valorDaMenorAresta = 0;
             
             float valorNovaAresta = 0;
-            
-            // Hashtable<Hashtable<T, T>, Float> pesoDasArestas = new Hashtable<Hashtable<T,T>, Float>();
 
             ArrayList<T> listaDeOrigens = new ArrayList<T>();
             ArrayList<T> listaDeDestinos = new ArrayList<T>();
             ArrayList<Float> listaDePesos = new ArrayList<Float>();
-
-            // ArrayList<Vertice<T>> verticesDoGrafoAntigo = this.vertices;
-            // Vertice<T> verticeDoGrafoAntigo = null;
 
             // pega menor aresta do que está ligado dentre todos os vértices do novoGrafo
             while(tamanhonovoGrafo < tamanhoGrafoAtual){
@@ -293,34 +285,39 @@ public class Grafo<T>{
                 // Loop para achar a menor aresta
                 for(Vertice<T> vertice : novoGrafo.vertices){
                     for(Aresta<T> novaAresta : vertice.getDestinos()){
-                        valorNovaAresta = novaAresta.getPeso();
+                        valorNovaAresta = novaAresta.getPeso();                        
 
-                        if(valorNovaAresta == 0) continue;
-
-                        Vertice<T> v = novoGrafo.getVertice(novaAresta.getDestino().getValor());
-
+                        // Verifica se o vertice de destino já está no grafo
+                        // Obtém o destino da aresta
+                        T destino = novaAresta.getDestino().getValor();
+                        // Busca desnino no grafo
+                        Vertice<T> v = novoGrafo.getVertice(destino);
+                        
+                        // Caso o vertice que contém o destino já esteja quer dizer que formará ciclo
                         Boolean verticeDeDestinoJaEstaNoGrafoNovo = v != null;
-
+                        // E se isso for acontecer esse vértice é ignorado
                         if(verticeDeDestinoJaEstaNoGrafoNovo) continue;
 
+                        // Verifica se para o vertice em questão já foi encontrada uma aresta de menor valor
                         if(!achouAresta){
                             origemDaMenorAresta = vertice.getValor();
                             destinoDaMenorAresta = novaAresta.getDestino().getValor();
                             valorDaMenorAresta = valorNovaAresta;
                             achouAresta = true;
-                            // verticeDoGrafoAntigo = vertice;
-                        } else if(valorDaMenorAresta > valorNovaAresta){ // compara antiga menor aresta com a possível nova menor aresta
+                        } else if(valorDaMenorAresta > valorNovaAresta){
+                            // Caso já tenha encontrado algum, compara antiga menor aresta com a possível nova menor aresta
                             origemDaMenorAresta = vertice.getValor();
                             destinoDaMenorAresta = novaAresta.getDestino().getValor();
                             valorDaMenorAresta = valorNovaAresta;
-                            // verticeDoGrafoAntigo = vertice;
                         }
                     }
                 }
                 // Verificar se forma Ciclo ao adicionar aresta
-                /* IDEIA: como estamos adicionando um destino quando vamos adicionar uma aresta
-                          pela lógica, caso o vertice já esteja no grafo, quer dizer que ele já é destino de outro vértice
-                   Por exemplo:
+                /* IDEIA: como estamos adicionando um destino, quando vamos adicionar uma aresta
+                          pela lógica, caso o vertice já esteja no grafo, quer dizer que ele já é destino de outro vértice,
+                          portanto formará um ciclo
+                          Premissa: Um vértice não pode adicionar um outro vértice - que já esteja no grafo novo - como destino
+                    Por exemplo:
                         - temos 2 grafos: grafoAtual{1, 2, 3, 4, 5}, grafoNovo{1, 2}
                         - com a seguinte matriz de adjacência:
                              0;47;78;65; 0
@@ -332,25 +329,20 @@ public class Grafo<T>{
                         - logo caso adicionemos aquela aresta, estermos gerando um ciclo
                 */
                 
-                // Adiciona o vértice de destino ao gráfo
-                // o clone teve que ser usado para duplicar as informações, pois quando o algoritmo era rodado mais uma vez as modificação era mantidas
-                // alterando em novoGrafo novo era alterado em grafoAtual também
+                /*
+                    Adiciona o vértice de destino ao gráfo.
+                    O clone teve que ser usado para duplicar as informações,
+                    pois quando o algoritmo era rodado mais uma vez as modificação era mantidas,
+                    e alterando no objeto novoGrafo era alterado também no objeto grafoAtual
+                */
                 novoGrafo.adicionarVertice(this.getVertice(destinoDaMenorAresta).clone());
-
-                // Adiciona a Aresta
-                // Hashtable<T, T> origemDestino = new Hashtable<T, T>();
-                // origemDestino.put(origemDaMenorAresta, destinoDaMenorAresta);
-                // pesoDasArestas.put(origemDestino, valorDaMenorAresta);
                 
-                // Adiciona a Aresta v2
+                // Adiciona a Aresta
                 listaDeOrigens.add(origemDaMenorAresta);
                 listaDeDestinos.add(destinoDaMenorAresta);
                 listaDePesos.add(valorDaMenorAresta);
-
-                // novoGrafo.adicionarAresta(valorDaMenorAresta, origemDaMenorAresta, destinoDaMenorAresta);
-                tamanhonovoGrafo = novoGrafo.vertices.size();
                 
-                // verticesDoGrafoAntigo.add(verticeDoGrafoAntigo);
+                tamanhonovoGrafo = novoGrafo.vertices.size();
             }
 
             // Remove todas as arestas do novoGrafo
@@ -359,15 +351,6 @@ public class Grafo<T>{
             }
 
             // Preenche as arestas do novoGrafo
-            // for(Hashtable<T,T> _origemDestino: pesoDasArestas.keySet()){
-            //     for(T _origem : _origemDestino.keySet()){
-            //         float pesoAresta = pesoDasArestas.get(_origemDestino);
-            //         T _destino = _origemDestino.get(_origem);
-            //         novoGrafo.adicionarAresta(pesoAresta, _origem, _destino);
-            //     }
-            // }
-
-            // Preenche as arestas do novoGrafo v2
             float _peso = 0;
             T _origem, _destino;
             for(int i = 0; i < listaDeOrigens.size(); i++){
@@ -387,15 +370,17 @@ public class Grafo<T>{
         T origem, destino;
         float valorAresta;
         String strSaida;
+        float pesoTotal = 0;
         System.out.println("===>Imprimindo Arestas<==");
         for(Vertice<T> vertice: this.vertices){
             origem = vertice.getValor();
             for(Aresta<T> aresta : vertice.getDestinos()){
                 destino = aresta.getDestino().getValor();
-                valorAresta = aresta.getPeso();
+                pesoTotal += valorAresta = aresta.getPeso();
                 strSaida = String.format("origem=(%s) === %.2f ==> destino=(%s)", origem, valorAresta, destino);
                 System.out.println(strSaida);
             }
         }
+        System.out.println("Soma total dos pesos da arvore geradora minima: " + pesoTotal);
     }
 }
