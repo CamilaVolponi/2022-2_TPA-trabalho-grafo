@@ -1,19 +1,19 @@
 package grafo;
 
 public class Aresta<T> {
-    private Float peso;
+    private float peso;
     private Vertice<T> destino;
 
-    public Aresta(Float peso, Vertice<T> destino){
+    public Aresta(float peso, Vertice<T> destino){
         this.peso = peso;
         this.destino = destino;
     }
 
-    public Float getPeso(){
+    public float getPeso(){
         return peso;
     }
 
-    public void setPeso(Float peso){
+    public void setPeso(float peso){
         this.peso = peso;
     }
 
@@ -29,5 +29,10 @@ public class Aresta<T> {
     public String toString() {
         // TODO Auto-generated method stub
         return destino.getValor() + "; peso: " + this.peso;
+    }
+
+    @Override
+    public Aresta<T> clone(){
+        return new Aresta<T>(this.peso, this.destino);
     }
 }

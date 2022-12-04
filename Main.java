@@ -59,6 +59,19 @@ public class Main {
                         }                        
                         break;
                     case 5:
+                        System.out.println("Qual o codigo da cidade de origem? ");
+                        codOrigem = Leitor.getLeitor().nextInt();
+                        System.out.println("Qual o codigo da cidade de destino? ");
+                        codDestino = Leitor.getLeitor().nextInt();
+                        origem = verificaSeCidadeExiste(codOrigem);
+                        destino = verificaSeCidadeExiste(codDestino);
+                        if(origem != null && destino != null){
+                            grafo.calcularFluxoMaximo(origem, destino);
+                        }else{
+                            System.out.println("Alguma cidade informada nao existe!");
+                        }                        
+                        break;
+                    case 6:
                         //METODO SAIR
                         break;
                     default:
@@ -77,7 +90,8 @@ public class Main {
         System.out.println("2 - Obter todos os caminhos a partir de uma cidade");
         System.out.println("3 - Calcular caminho minimo");
         System.out.println("4 - Calcular Arvore geradora minima");
-        System.out.println("5 - Sair");
+        System.out.println("5 - Calcular Fluxo Máximo");
+        System.out.println("6 - Sair");
         System.out.println("======================================");
     } 
     

@@ -31,7 +31,7 @@ public class Vertice<T> {
     protected Vertice<T> clone() {
         Vertice<T> v = new Vertice<T>(this.valor);
         for(Aresta<T> a : this.destinos){
-            v.destinos.add(a);
+            v.destinos.add(a.clone());
         }
         return v;
     }
