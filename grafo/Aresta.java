@@ -25,6 +25,14 @@ public class Aresta<T> {
         this.destino = destino;
     }
 
+    public boolean temVerticeDeDestinoIgualA(Vertice<T> vertice){
+        return this.destino.getValor().equals(vertice.getValor());
+    }
+
+    public boolean temVerticeDeDestinoDiferenteDe(Vertice<T> vertice){
+        return !this.destino.getValor().equals(vertice.getValor());
+    }
+
     @Override
     public String toString() {
         // TODO Auto-generated method stub

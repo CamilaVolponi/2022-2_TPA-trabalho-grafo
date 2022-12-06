@@ -1,7 +1,6 @@
 package grafo;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 public class Grafo<T>{
     private ArrayList<Vertice<T>> vertices;
@@ -385,36 +384,6 @@ public class Grafo<T>{
         System.out.println("Soma total dos pesos da arvore geradora minima: " + pesoTotal);
     }
 
-    private ArrayList<Aresta<T>> achaCaminho(Aresta<T> arestaOrigem, Vertice<T> destino, ArrayList<Aresta<T>> caminho, ArrayList<T> visitados){
-        // Obtem a primeira aresta que tem o peso maior que 0
-        ArrayList<Aresta<T>> caminhoClone = new ArrayList<Aresta<T>>();
-        for(Aresta<T> aresta: caminho){
-            caminhoClone.add(aresta);
-        }
-        Vertice<T> destinoDaArestaDeOrigem = arestaOrigem.getDestino();
-        if(destinoDaArestaDeOrigem.equals(destino)){
-            caminhoClone.add(arestaOrigem);
-            return caminhoClone;
-        } else {
-            T valorDoDestinoDaArestaDeOrigem = arestaOrigem.getDestino().getValor();
-            if(!visitados.contains(valorDoDestinoDaArestaDeOrigem) && arestaOrigem.getPeso() > 0){
-                visitados.add(valorDoDestinoDaArestaDeOrigem);
-                caminhoClone.add(arestaOrigem);
-                for(Aresta<T> arestaQueLevaAoVerticeAdjacente : destinoDaArestaDeOrigem.getDestinos()){
-                    T valorDoVerticeAdjacente = arestaQueLevaAoVerticeAdjacente.getDestino().getValor();
-                    if(!visitados.contains(valorDoVerticeAdjacente) && arestaQueLevaAoVerticeAdjacente.getPeso() > 0){
-                        visitados.add(valorDoVerticeAdjacente);
-                        caminhoClone.add(arestaQueLevaAoVerticeAdjacente);
-                        return achaCaminho(arestaQueLevaAoVerticeAdjacente, destino, caminhoClone, visitados);
-                    }
-                }
-                return caminhoClone;
-            } else {
-                return null;
-            }
-        }
-    }
-
     public void calcularFluxoMaximo(T origem, T destino){
         Grafo<T> grafoClone = this.clone();
 
@@ -436,106 +405,125 @@ public class Grafo<T>{
         */
 
         boolean achouTodosCaminhos = false; // Usado no while: while(!achouTodosCaminhos)
-        float fulxoMaximo = 0;
+        float fluxoMaximo = 0;
 
         ArrayList<Aresta<T>> caminho = new ArrayList<Aresta<T>>(); // Usado no while: while(!atual.getValor().equals(vertDestino.getValor()))
-        ArrayList<Vertice<T>> verticesASeremIgnorados = new ArrayList<Vertice<T>>(); // Usado no while: while(!atual.getValor().equals(vertDestino.getValor()))
+        ArrayList<Vertice<T>> verticesVisitados = new ArrayList<Vertice<T>>(); // Usado no while: while(!atual.getValor().equals(vertDestino.getValor()))
+        ArrayList<Vertice<T>> verticesIgnorados = new ArrayList<Vertice<T>>(); // Usado no while: while(!atual.getValor().equals(vertDestino.getValor()))
         
         Vertice<T> atual = vertOrigem; // Usado no while: while(!atual.getValor().equals(vertDestino.getValor()))
-        verticesASeremIgnorados.add(atual); // Usado no while: while(!atual.getValor().equals(vertDestino.getValor()))
         
         boolean achouCaminho = false; // Usado no while: while(!atual.getValor().equals(vertDestino.getValor()))
-        Aresta<T> menorAresta = new Aresta<T>(Float.POSITIVE_INFINITY, null); // Usado no while: while(!atual.getValor().equals(vertDestino.getValor()))
+        final Aresta<T> menorArestaUniversal = new Aresta<T>(Float.POSITIVE_INFINITY, null); // Usado no while: while(!atual.getValor().equals(vertDestino.getValor()))
+        Aresta<T> menorAresta = menorArestaUniversal; // Usado no while: while(!atual.getValor().equals(vertDestino.getValor()))
+
+        int caminhosEncontrados = 0;
 
         while(!achouTodosCaminhos){
             while(!atual.getValor().equals(vertDestino.getValor())){
-                for(Aresta<T> aresta : atual.getDestinos()){
-                    if(aresta.getPeso() > 0
-                    // && !verticeEstahNoCaminho(aresta.getDestino(), caminho)
-                    && !verticePrecisaSerIgnorado(aresta.getDestino(), verticesASeremIgnorados)){
-                        caminho.add(aresta);
-                        verticesASeremIgnorados.add(aresta.getDestino());
-                        atual = aresta.getDestino();
-                        achouCaminho = true;
-                        if(aresta.getPeso() < menorAresta.getPeso()){
-                            menorAresta = aresta;
+                Aresta<T> aresta = null;
+                for(int index = 0; index < atual.getDestinos().size(); index ++){
+                    aresta = atual.getDestinos().get(index);
+                    if(aresta.getPeso() > 0){
+                        // System.out.println("atual: " + atual.getValor() + " | aresta: " + aresta);
+                        if(aresta.temVerticeDeDestinoDiferenteDe(vertOrigem) // verifica se o vertice adjacente é o vertice de origem
+                        && !verticeEstahNoCaminho(aresta.getDestino(), caminho)
+                        && !verticeFoiVisitado(aresta.getDestino(), verticesVisitados)
+                        && !verticeTemQueSerIgnorado(aresta.getDestino(), verticesIgnorados)){
+                            achouCaminho = true;
+                            caminho.add(aresta);
+                            verticesVisitados.add(atual);
+                            atual = aresta.getDestino();
+                            if(aresta.getPeso() < menorAresta.getPeso()){
+                                menorAresta = aresta;
+                            }
+                            break;
                         }
-                        break;
+                    } else {
+                        // Só entrará nesse else, caso todos a aresta tenha peso 0
+                        if(atual.getDestinos().size() - 1 == index){
+                            // Só entrará nesse else caso a última aresta tenha peso 0
+                            achouCaminho = false;
+                        }
                     }
-                    // System.out.println("atual: " + atual.getValor());
-                    // System.out.println("vertDestino: " + vertDestino.getValor());
                 }
+                
                 if(!achouCaminho){
                     if(atual.getValor().equals(vertOrigem.getValor())){
+                        // Só entrará nesse if caso o vertice de origem não tenha mais nenhuma saída
                         achouTodosCaminhos = true;
                         break;
                     } else {
-                        verticesASeremIgnorados.add(atual); // Vamos ignorar o vertice atual (destino da ultima aresta adicionada)
+                        // Entra nesse else caso o vertice atual tenha todas as suas arestas com peso == 0
+                        verticesIgnorados.add(atual); // Vamos ignorar o vertice atual (destino da ultima aresta adicionada)
                         caminho.remove(caminho.size() - 1); // Removemos a aresta do caminho cujo o destino seja o vertice atual
                         atual = caminho.get(caminho.size() - 1).getDestino(); // Pegamos o destino anterior a esse
                     }
-                    break;
                 }
             }
-            // Atualiza valor do fluxo máximo
-            fulxoMaximo += menorAresta.getPeso();
-            // Subtrair o valor da menor Aresta das Arestas do caminho encontrado
-            Vertice<T> origemArestaAtual = vertOrigem;
-            Vertice<T> destinoArestaAtual = null;
-            Vertice<T> destinoDaArestaDoDestino = null;
-            for(Aresta<T> aresta : caminho){
-                aresta.setPeso(aresta.getPeso() - menorAresta.getPeso());
-                // somar na aresta oposta se tiver
-                destinoArestaAtual = aresta.getDestino();
-                // acha aresta correspondente a origem atual
-                for(Aresta<T> arestaDoDestino : destinoArestaAtual.getDestinos()){
-                    // Encontra a aresta que liga o destino atual a origem atual, exatamente nessa ordem
-                    destinoDaArestaDoDestino = arestaDoDestino.getDestino();
-                    if(destinoDaArestaDoDestino.getValor().equals(origemArestaAtual.getValor())){
-                        arestaDoDestino.setPeso(arestaDoDestino.getPeso() + menorAresta.getPeso());
+
+            if(!achouTodosCaminhos){
+                System.out.println("\n\n");
+                System.out.println("Imprimindo caminho");
+                imprimirCaminho(origem, caminho);
+                System.out.println("\n\n");
+
+                // Atualiza valor do fluxo máximo
+                fluxoMaximo += menorAresta.getPeso();
+                // Subtrair o valor da menor Aresta das Arestas do caminho encontrado
+                Vertice<T> origemArestaAtual = vertOrigem;
+                Vertice<T> destinoArestaAtual = null;
+                for(Aresta<T> aresta : caminho){
+                    aresta.setPeso(aresta.getPeso() - menorAresta.getPeso());
+
+                    // somar na aresta oposta se tiver
+                    destinoArestaAtual = aresta.getDestino();
+                    // acha aresta correspondente a origem atual
+                    for(Aresta<T> arestaDoDestino : destinoArestaAtual.getDestinos()){
+                        // Encontra a aresta que liga o destino atual a origem atual, exatamente nessa ordem
+                        if(arestaDoDestino.temVerticeDeDestinoIgualA(origemArestaAtual)){
+                            arestaDoDestino.setPeso(arestaDoDestino.getPeso() + menorAresta.getPeso());
+                            break;
+                        }
                     }
+                    origemArestaAtual = aresta.getDestino(); // Seta a origemAtual da próxima aresta
                 }
-                origemArestaAtual = aresta.getDestino(); // Seta a origemAtual da próxima aresta
+
+                // Prepara Variáveis para achar o próximo caminho
+                verticesVisitados.clear();
+                caminho.clear();
+                atual = vertOrigem;
+                achouCaminho = false;
+                menorAresta = menorArestaUniversal;
+
+                caminhosEncontrados++;
             }
-            // Prepara Variáveis para achar o próximo caminho
-            verticesASeremIgnorados.clear();
-            atual = vertOrigem;
-            verticesASeremIgnorados.add(atual);
-            achouCaminho = false;
         }
 
         // Para sair do while tem que ter consegui encontrar 1 caminho
 
-        System.out.println("fluxo máximo:" + fulxoMaximo);
-
-        /*
-        int indexDestino = 0;
-        while(indexDestino < vertOrigem.getDestinos().size()){
-            for(Aresta<T> aresta : vertOrigem.getDestinos()){
-                ArrayList<T> vistados = new ArrayList<T>();
-                vistados.add(vertOrigem.getValor());
-                ArrayList<Aresta<T>> caminho_2 = achaCaminho(aresta, vertDestino, new ArrayList<Aresta<T>>(), vistados);
-                if(caminho_2 == null){
-                    System.out.println("caminho_2 é null");
-                } else if(!caminho_2.get(caminho_2.size() -1).equals(destino)){
-                    indexDestino++;
-                } else {
-                    imprimirCaminho(origem, caminho_2);
-                }
-            }
-        }
-        */
+        System.out.println("fluxo máximo:" + fluxoMaximo);
+        System.out.println("caminhos encontrados:" + caminhosEncontrados);
     }
 
     private boolean verticeEstahNoCaminho(Vertice<T> procurado, ArrayList<Aresta<T>> caminho){
         for(Aresta<T> aresta: caminho){
             if(procurado.getValor().equals(aresta.getDestino().getValor())){
                 return true;
+            }   
+        }
+        return false;
+    }
+    private boolean verticeFoiVisitado(Vertice<T> procurado, ArrayList<Vertice<T>> visitados){
+        for(Vertice<T> vertice: visitados){
+            if(procurado.getValor().equals(vertice.getValor())){
+                return true;
             }
         }
         return false;
     }
-    private boolean verticePrecisaSerIgnorado(Vertice<T> procurado, ArrayList<Vertice<T>> paraIgnorar){
+
+    private boolean verticeTemQueSerIgnorado(Vertice<T> procurado, ArrayList<Vertice<T>> paraIgnorar){
         for(Vertice<T> vertice: paraIgnorar){
             if(procurado.getValor().equals(vertice.getValor())){
                 return true;
@@ -547,7 +535,7 @@ public class Grafo<T>{
 
 
     private void imprimirCaminho(T origem, ArrayList<Aresta<T>> caminho){
-        System.out.println(origem);
+        System.out.println("origem:" + origem);
         for(Aresta<T> aresta: caminho){
             System.out.println(aresta);
         }

@@ -77,7 +77,7 @@ public class Main {
                     default:
                         break;
                 }
-            } while(selection != 5);
+            } while(selection != 6);
         } catch (IOException e) {
             System.out.println("Erro ao abrir o arquivo");
         }
