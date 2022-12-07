@@ -409,7 +409,9 @@ public class Grafo<T>{
 
         ArrayList<Aresta<T>> caminho = new ArrayList<Aresta<T>>(); // Usado no while: while(!atual.getValor().equals(vertDestino.getValor()))
         ArrayList<Vertice<T>> verticesVisitados = new ArrayList<Vertice<T>>(); // Usado no while: while(!atual.getValor().equals(vertDestino.getValor()))
+                                                                                // Usado para saber se um vertice já foi visitado e se precisa ignorar
         ArrayList<Vertice<T>> verticesIgnorados = new ArrayList<Vertice<T>>(); // Usado no while: while(!atual.getValor().equals(vertDestino.getValor()))
+                                                                                // Vertices que já não tem mais arestas de saida com peso maior que 0
         
         Vertice<T> atual = vertOrigem; // Usado no while: while(!atual.getValor().equals(vertDestino.getValor()))
         
@@ -422,6 +424,7 @@ public class Grafo<T>{
         while(!achouTodosCaminhos){
             while(!atual.getValor().equals(vertDestino.getValor())){
                 Aresta<T> aresta = null;
+                // Verificar o porquê de não achar caminho saindo da origem e indo pro 3 do arquivo de entrada_test
                 for(int index = 0; index < atual.getDestinos().size(); index ++){
                     aresta = atual.getDestinos().get(index);
                     if(aresta.getPeso() > 0){
@@ -437,18 +440,20 @@ public class Grafo<T>{
                             if(aresta.getPeso() < menorAresta.getPeso()){
                                 menorAresta = aresta;
                             }
-                            break;
+                            break; // for(int index = 0; index < atual.getDestinos().size(); index ++)
                         }
                     } else {
-                        // Só entrará nesse else, caso todos a aresta tenha peso 0
+                        // Só entrará nesse else, caso aresta atual tenha peso 0
                         if(atual.getDestinos().size() - 1 == index){
                             // Só entrará nesse else caso a última aresta tenha peso 0
+                            // Já que o break não foi acionado dentro do if anterior
                             achouCaminho = false;
                         }
                     }
                 }
                 
                 if(!achouCaminho){
+                    // Só entrará nesse if caso no vértice atual não tenha nenhuma aresta de saída com peso maior que 0
                     if(atual.getValor().equals(vertOrigem.getValor())){
                         // Só entrará nesse if caso o vertice de origem não tenha mais nenhuma saída
                         achouTodosCaminhos = true;
@@ -468,28 +473,29 @@ public class Grafo<T>{
                 imprimirCaminho(origem, caminho);
                 System.out.println("\n\n");
 
-                // Atualiza valor do fluxo máximo
+                // Atualiza valor do fluxo máximo do grafo entrando pela origem e saindo pelo destino
                 fluxoMaximo += menorAresta.getPeso();
-                // Subtrair o valor da menor Aresta das Arestas do caminho encontrado
                 Vertice<T> origemArestaAtual = vertOrigem;
                 Vertice<T> destinoArestaAtual = null;
                 for(Aresta<T> aresta : caminho){
+                    // Subtrair o valor da menor Aresta das Arestas do caminho encontrado
                     aresta.setPeso(aresta.getPeso() - menorAresta.getPeso());
 
                     // somar na aresta oposta se tiver
                     destinoArestaAtual = aresta.getDestino();
                     // acha aresta correspondente a origem atual
                     for(Aresta<T> arestaDoDestino : destinoArestaAtual.getDestinos()){
-                        // Encontra a aresta que liga o destino atual a origem atual, exatamente nessa ordem
+                        // Encontra a aresta que liga o destino da aresta atual à origem da aresta atual, exatamente nessa ordem
                         if(arestaDoDestino.temVerticeDeDestinoIgualA(origemArestaAtual)){
                             arestaDoDestino.setPeso(arestaDoDestino.getPeso() + menorAresta.getPeso());
                             break;
                         }
+                        // SE NÃO ENCONTRAR TALVEZ TENHA QUE CRIAR
                     }
-                    origemArestaAtual = aresta.getDestino(); // Seta a origemAtual da próxima aresta
+                    origemArestaAtual = aresta.getDestino(); // Muda a origemAtual para a origem da próxima aresta
                 }
 
-                // Prepara Variáveis para achar o próximo caminho
+                // Prepara variáveis para achar o próximo caminho
                 verticesVisitados.clear();
                 caminho.clear();
                 atual = vertOrigem;
@@ -500,8 +506,7 @@ public class Grafo<T>{
             }
         }
 
-        // Para sair do while tem que ter consegui encontrar 1 caminho
-
+        // Para sair do while tem que não ter encontrado mais nenhum caminho
         System.out.println("fluxo máximo:" + fluxoMaximo);
         System.out.println("caminhos encontrados:" + caminhosEncontrados);
     }
@@ -545,7 +550,18 @@ public class Grafo<T>{
     public Grafo<T> clone() {
         Grafo<T> cloneGrafo = new Grafo<T>();
         for(Vertice<T> vertice : this.vertices){
+            // Verificar caso do destino da aresta ser diferente do vértice da clone do grafo
+            // Solução: passar pelas arestas alterando o destino da aresta usando getVertice do grafoClone
+            // Cada vertice tem as arestas que ligam a um outro vértice
             cloneGrafo.adicionarVertice(vertice.clone());
+        }
+        // Resolve o problema de uma aresta ter como destino um vértice de outro grafo
+        for(Vertice<T> vertice : cloneGrafo.vertices){
+            for(Aresta<T> aresta : vertice.getDestinos()){
+                Vertice<T> destinoAresta = aresta.getDestino();
+                Vertice<T> verticeDeDestinoNoCloneGrafo = cloneGrafo.getVertice(destinoAresta.getValor());
+                aresta.setDestino(verticeDeDestinoNoCloneGrafo);
+            }
         }
         return cloneGrafo;
     }

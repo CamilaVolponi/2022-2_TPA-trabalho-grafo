@@ -11,7 +11,7 @@ public class Main {
     static Grafo<Cidade> grafo = new Grafo<Cidade>();
     public static void main(String[] args) throws IOException{        
         try {
-            lerGrafo("entrada.txt", grafo);
+            lerGrafo("entrada_test.txt", grafo);
             
             int selection, codCidade, codOrigem, codDestino;
             Cidade origem, destino;
