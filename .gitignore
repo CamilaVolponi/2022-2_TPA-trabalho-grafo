@@ -1,1 +1,4 @@
 entrada*.txt
+# Excessões a regra de exclusão do commit
+!entrada.txt
+!entrada_test.txt
