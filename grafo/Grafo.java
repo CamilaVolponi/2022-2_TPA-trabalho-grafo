@@ -383,7 +383,79 @@ public class Grafo<T>{
         }
         System.out.println("Soma total dos pesos da arvore geradora minima: " + pesoTotal);
     }
-
+    private No_v2<Vertice<T>> obterMenorCaminho(T origem, T destino){
+        // imprimir na tela o caminho minimo da origem para o destino e a distancia total entre os dois
+        // Obter todos os vertices para ligar a distancia e o predececor a um vertice
+        ArrayList<No_v2<Vertice<T>>> nos = new ArrayList<No_v2<Vertice<T>>>();
+        // Povoa a lista de nós com todos os Vertices do grafo de cidades
+        No_v2<Vertice<T>> noOrigem = null, noDestino = null;
+        for(Vertice<T> vertice: vertices){
+            if(vertice.getValor().equals(origem)){
+                // Marcar quem é o primeiro
+                noOrigem = new No_v2<Vertice<T>>(vertice, true);
+                nos.add(noOrigem);
+            } else if(vertice.getValor().equals(destino)){
+                noDestino = new No_v2<Vertice<T>>(vertice, false);
+                nos.add(noDestino);
+            } else {
+                nos.add(new No_v2<Vertice<T>>(vertice, false));
+            }
+        }
+        ArrayList<No_v2<Vertice<T>>> rotulados = new ArrayList<No_v2<Vertice<T>>>();
+        No_v2<Vertice<T>> noAtual = noOrigem;
+        while(this.vertices.size() < rotulados.size() || !rotulados.contains(noDestino)){
+            // Adiciona o no atual a lista de rotulados
+            rotulados.add(noAtual);
+            // Pega distancia do no atual
+            float distanciaNoAtual = noAtual.getDistancia();
+            // Pega aresta que liga aos nós de destino
+            for(Aresta<T> aresta : noAtual.getValor().getDestinos()){
+                // Percorre cada vertice vizinho (Destino, nós adjacentes)
+                // Cujo os pesos das arestas sejam maiores que 0
+                if(aresta.getPeso() > 0){ // Usado no algoritmo de ford-fulkerson (fluxo máximo)
+                    Vertice<T> vert = aresta.getDestino();
+                    // Obtem o index do nó de destino
+                    No_v2<Vertice<T>> noDestinoDoNoAtual = null;
+                    // Obtem o nó de destino do nó atual
+                    for(No_v2<Vertice<T>> noDestinoDoAtual: nos){
+                        if(noDestinoDoAtual.getValor().equals(vert)){
+                            noDestinoDoNoAtual = noDestinoDoAtual;
+                            break;
+                        }
+                    }
+                    // Obtem a possível nova distância para o nó de destino
+                    float novaDistancia = distanciaNoAtual + aresta.getPeso();
+                    // verifica se a distância atual para o nó de destino é maior que a nova distância
+                    // Se for troca distância e o predecessor
+                    if(noDestinoDoNoAtual.getDistancia() > novaDistancia){
+                        noDestinoDoNoAtual.setDistancia(novaDistancia);
+                        noDestinoDoNoAtual.setPredecessor(noAtual);
+                    }
+                }
+            }
+            No_v2<Vertice<T>> noDeMenorDistancia = null;
+            // Encontra o nó de menor distância que não foi rotulado
+            for(No_v2<Vertice<T>> no: nos){
+                if(!rotulados.contains(no)){
+                    // Se nenhum objeto tiver sido atribuído à variável 'noDeMenorDistancia' quer dizer que ainda não existe nenhum
+                    // nó de menor distância, logo podemos atribir o nó atual para tal
+                    if(noDeMenorDistancia == null){
+                        noDeMenorDistancia = no;
+                    } else {
+                        if(no.getDistancia() == No.INFINITO){
+                            continue;
+                        }
+                        if(noDeMenorDistancia.getDistancia() > no.getDistancia()){
+                            noDeMenorDistancia = no;
+                        }
+                    }
+                }
+            }
+            noAtual = noDeMenorDistancia;
+        }
+        return noDestino;
+    }
+    
     public void calcularFluxoMaximo(T origem, T destino){
         Grafo<T> grafoClone = this.clone();
 
@@ -393,157 +465,107 @@ public class Grafo<T>{
             return;
         }
 
-        // começa da origem
-        // para cada vertice adjacente à origem procura-se um caminho cujo o peso da aresta seja maior que zero
-        // para cada vertice adjacente do vertice adjacente procura-se um caminho cujo o peso da aresta seja maior que zero
-        // // OBS: verificar se o vertice em questão já foi visitado
-        /*
-            ==> como procurar caminho: <==
-            para cada vertice adjacente que não tenha sido visitado
-            o vertice é inserido nos verticesVisitados e chamando os seu adjacentes
-            até chegar no vertice de destino
-        */
-
-        boolean achouTodosCaminhos = false; // Usado no while: while(!achouTodosCaminhos)
+        final Aresta<T> menorArestaUniversal = new Aresta<T>(Float.POSITIVE_INFINITY, null);
+        Aresta<T> menorAresta = null;
+        ArrayList<Aresta<T>> caminho = new ArrayList<Aresta<T>>();
+        int caminhosEncontrados = 0;
         float fluxoMaximo = 0;
 
-        ArrayList<Aresta<T>> caminho = new ArrayList<Aresta<T>>(); // Usado no while: while(!atual.getValor().equals(vertDestino.getValor()))
-        ArrayList<Vertice<T>> verticesVisitados = new ArrayList<Vertice<T>>(); // Usado no while: while(!atual.getValor().equals(vertDestino.getValor()))
-                                                                                // Usado para saber se um vertice já foi visitado e se precisa ignorar
-        ArrayList<Vertice<T>> verticesIgnorados = new ArrayList<Vertice<T>>(); // Usado no while: while(!atual.getValor().equals(vertDestino.getValor()))
-                                                                                // Vertices que já não tem mais arestas de saida com peso maior que 0
+        No_v2<Vertice<T>> ultimoElementoDoCaminho = grafoClone.obterMenorCaminho(origem, destino);
         
-        Vertice<T> atual = vertOrigem; // Usado no while: while(!atual.getValor().equals(vertDestino.getValor()))
-        
-        boolean achouCaminho = false; // Usado no while: while(!atual.getValor().equals(vertDestino.getValor()))
-        final Aresta<T> menorArestaUniversal = new Aresta<T>(Float.POSITIVE_INFINITY, null); // Usado no while: while(!atual.getValor().equals(vertDestino.getValor()))
-        Aresta<T> menorAresta = menorArestaUniversal; // Usado no while: while(!atual.getValor().equals(vertDestino.getValor()))
+        No_v2<Vertice<T>> noAtual = null;
 
-        int caminhosEncontrados = 0;
+        while(ultimoElementoDoCaminho.getPredecessor() != null){
+            noAtual = ultimoElementoDoCaminho;
+            menorAresta = menorArestaUniversal;
 
-        while(!achouTodosCaminhos){
-            while(!atual.getValor().equals(vertDestino.getValor())){
-                Aresta<T> aresta = null;
-                // Verificar o porquê de não achar caminho saindo da origem e indo pro 3 do arquivo de entrada_test
-                for(int index = 0; index < atual.getDestinos().size(); index ++){
-                    aresta = atual.getDestinos().get(index);
-                    if(aresta.getPeso() > 0){
-                        // System.out.println("atual: " + atual.getValor() + " | aresta: " + aresta);
-                        if(aresta.temVerticeDeDestinoDiferenteDe(vertOrigem) // verifica se o vertice adjacente é o vertice de origem
-                        && !verticeEstahNoCaminho(aresta.getDestino(), caminho)
-                        && !verticeFoiVisitado(aresta.getDestino(), verticesVisitados)
-                        && !verticeTemQueSerIgnorado(aresta.getDestino(), verticesIgnorados)){
-                            achouCaminho = true;
-                            caminho.add(aresta);
-                            verticesVisitados.add(atual);
-                            atual = aresta.getDestino();
-                            if(aresta.getPeso() < menorAresta.getPeso()){
-                                menorAresta = aresta;
-                            }
-                            break; // for(int index = 0; index < atual.getDestinos().size(); index ++)
-                        }
-                    } else {
-                        // Só entrará nesse else, caso aresta atual tenha peso 0
-                        if(atual.getDestinos().size() - 1 == index){
-                            // Só entrará nesse else caso a última aresta tenha peso 0
-                            // Já que o break não foi acionado dentro do if anterior
-                            achouCaminho = false;
-                        }
-                    }
+            int indexDestino = 0;
+            Aresta<T> arestaDeDestinoDoPredecessor = noAtual.getPredecessor().getValor().getDestinos().get(indexDestino++);
+            // Procura no predecessor a aresta que corresponde ao no atual
+            // Ex: temos 2 nós, 6 e 7.
+            /*
+             * temos uma aresta de peso x dentro do vertice 6 que o liga ao vertice 7
+             * porém o noAtual = 7, logo,
+             * caminha-se pela lista de aresta do predecessor até achar a aresta que tiver como destino o meu noAtual
+             */
+            while(noNaoEhIgualA(noAtual, vertOrigem)){
+                // while executado até chegar no no de origem
+                while(arestaDeDestinoDoPredecessor.temVerticeDeDestinoDiferenteDe(noAtual.getValor())){
+                    // while executado até encontrar a aresta do predecessor cujo o destino é o noAtual
+                    arestaDeDestinoDoPredecessor = noAtual.getPredecessor().getValor().getDestinos().get(indexDestino++);
                 }
-                
-                if(!achouCaminho){
-                    // Só entrará nesse if caso no vértice atual não tenha nenhuma aresta de saída com peso maior que 0
-                    if(atual.getValor().equals(vertOrigem.getValor())){
-                        // Só entrará nesse if caso o vertice de origem não tenha mais nenhuma saída
-                        achouTodosCaminhos = true;
-                        break;
-                    } else {
-                        // Entra nesse else caso o vertice atual tenha todas as suas arestas com peso == 0
-                        verticesIgnorados.add(atual); // Vamos ignorar o vertice atual (destino da ultima aresta adicionada)
-                        caminho.remove(caminho.size() - 1); // Removemos a aresta do caminho cujo o destino seja o vertice atual
-                        atual = caminho.get(caminho.size() - 1).getDestino(); // Pegamos o destino anterior a esse
-                    }
+                // quando encontrado o peso da aresta é comparado com a menor aresta atual do caminho, caso seja menor
+                // essa aresta é tomada como menor aresta atual do caminho
+                if(arestaDeDestinoDoPredecessor.getPeso() < menorAresta.getPeso()){
+                    menorAresta = arestaDeDestinoDoPredecessor;
                 }
+                System.out.println(arestaDeDestinoDoPredecessor + " <==> " + noAtual.getValor());
+                // Aqui a aresta é inserida numa lista chamada caminho que segue o sentido origem -> destino
+                // sendo assim a primeira aresta contida é a que liga a origem até o segundo vertice do caminho
+                // e a última aresta é a que liga o penúltimo elemento do caminho ao destino
+                caminho.add(0, arestaDeDestinoDoPredecessor);
+                // Nesse ponto mudamos o no atual para o predecessor isso se repete até que cheguemos no de origem
+                // o que significa que a lista de caminho terá todas as arestas que ligam a origem ao destino
+                noAtual = noAtual.getPredecessor();
+                indexDestino = 0;
             }
+            System.out.println(noAtual.getValor() + " <=> " + vertOrigem);
 
-            if(!achouTodosCaminhos){
-                System.out.println("\n\n");
-                System.out.println("Imprimindo caminho");
-                imprimirCaminho(origem, caminho);
-                System.out.println("\n\n");
+            // Atualiza valor do fluxo máximo do grafo entrando pela origem e saindo pelo destino
+            fluxoMaximo += menorAresta.getPeso();
+            Vertice<T> origemArestaAtual = vertOrigem;
+            Vertice<T> destinoArestaAtual = null;
+            float pesoDaMenorAresta = menorAresta.getPeso(); // Foi necessário pois o valor se perdia quando era subtraído da própria aresta
+            for(Aresta<T> aresta : caminho){
+                // Subtrair o valor da menor Aresta das Arestas do caminho encontrado
+                aresta.setPeso(aresta.getPeso() - pesoDaMenorAresta);
 
-                // Atualiza valor do fluxo máximo do grafo entrando pela origem e saindo pelo destino
-                fluxoMaximo += menorAresta.getPeso();
-                Vertice<T> origemArestaAtual = vertOrigem;
-                Vertice<T> destinoArestaAtual = null;
-                for(Aresta<T> aresta : caminho){
-                    // Subtrair o valor da menor Aresta das Arestas do caminho encontrado
-                    aresta.setPeso(aresta.getPeso() - menorAresta.getPeso());
-
-                    // somar na aresta oposta se tiver
-                    destinoArestaAtual = aresta.getDestino();
-                    // acha aresta correspondente a origem atual
-                    for(Aresta<T> arestaDoDestino : destinoArestaAtual.getDestinos()){
+                // somar na aresta oposta
+                destinoArestaAtual = aresta.getDestino();
+                // acha aresta correspondente a origem atual
+                int quantidadeDeDestinosDoDestinoDaArestaAtual = destinoArestaAtual.getDestinos().size();
+                if(quantidadeDeDestinosDoDestinoDaArestaAtual == 0){
+                    // Só entrará aqui caso não tenha encontrado uma aresta que liga o destino da aresta atual à origem da aresta atual, exatamente nessa ordem
+                    // Sendo assim o caminho será criado adicionando o valor da menor aresta. IDEIA: 0 (aresta não existe) + pesoDaMenorAresta
+                    grafoClone.adicionarAresta(pesoDaMenorAresta, destinoArestaAtual.getValor(), origemArestaAtual.getValor());
+                } else {
+                    int indexDoDestinoDaAresta = 0;
+                    Aresta<T> arestaDoDestino = destinoArestaAtual.getDestinos().get(indexDoDestinoDaAresta++);
+                    boolean encontrou = false;
+                    while(!encontrou && indexDoDestinoDaAresta < quantidadeDeDestinosDoDestinoDaArestaAtual){
                         // Encontra a aresta que liga o destino da aresta atual à origem da aresta atual, exatamente nessa ordem
                         if(arestaDoDestino.temVerticeDeDestinoIgualA(origemArestaAtual)){
-                            arestaDoDestino.setPeso(arestaDoDestino.getPeso() + menorAresta.getPeso());
-                            break;
+                            arestaDoDestino.setPeso(arestaDoDestino.getPeso() + pesoDaMenorAresta);
+                            encontrou = true;
+                        } else {
+                            arestaDoDestino = destinoArestaAtual.getDestinos().get(indexDoDestinoDaAresta++);
                         }
-                        // SE NÃO ENCONTRAR TALVEZ TENHA QUE CRIAR
                     }
-                    origemArestaAtual = aresta.getDestino(); // Muda a origemAtual para a origem da próxima aresta
+                    if(!encontrou){
+                        // Só entrará aqui caso não tenha encontrado uma aresta que liga o destino da aresta atual à origem da aresta atual, exatamente nessa ordem
+                        // Sendo assim o caminho será criado adicionando o valor da menor aresta. IDEIA: 0 (aresta não existe) + pesoDaMenorAresta
+                        grafoClone.adicionarAresta(pesoDaMenorAresta, destinoArestaAtual.getValor(), origemArestaAtual.getValor());
+                    }
                 }
-
-                // Prepara variáveis para achar o próximo caminho
-                verticesVisitados.clear();
-                caminho.clear();
-                atual = vertOrigem;
-                achouCaminho = false;
-                menorAresta = menorArestaUniversal;
-
-                caminhosEncontrados++;
+                origemArestaAtual = aresta.getDestino(); // Muda a origemAtual para a origem da próxima aresta
             }
+
+            // Prepara variáveis para achar o próximo caminho
+            caminho.clear();
+            menorAresta = menorArestaUniversal;
+            ultimoElementoDoCaminho = grafoClone.obterMenorCaminho(origem, destino);
+            caminhosEncontrados++;
+            System.out.println("\nCAMINHO: " + caminhosEncontrados + "\n");
         }
 
-        // Para sair do while tem que não ter encontrado mais nenhum caminho
-        System.out.println("fluxo máximo:" + fluxoMaximo);
-        System.out.println("caminhos encontrados:" + caminhosEncontrados);
-    }
-
-    private boolean verticeEstahNoCaminho(Vertice<T> procurado, ArrayList<Aresta<T>> caminho){
-        for(Aresta<T> aresta: caminho){
-            if(procurado.getValor().equals(aresta.getDestino().getValor())){
-                return true;
-            }   
-        }
-        return false;
-    }
-    private boolean verticeFoiVisitado(Vertice<T> procurado, ArrayList<Vertice<T>> visitados){
-        for(Vertice<T> vertice: visitados){
-            if(procurado.getValor().equals(vertice.getValor())){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean verticeTemQueSerIgnorado(Vertice<T> procurado, ArrayList<Vertice<T>> paraIgnorar){
-        for(Vertice<T> vertice: paraIgnorar){
-            if(procurado.getValor().equals(vertice.getValor())){
-                return true;
-            }
-        }
-        return false;
+        System.out.println("fluxo máximo: " + fluxoMaximo);
+        System.out.println("quantidade de caminhos: " + caminhosEncontrados);
     }
 
 
-
-    private void imprimirCaminho(T origem, ArrayList<Aresta<T>> caminho){
-        System.out.println("origem:" + origem);
-        for(Aresta<T> aresta: caminho){
-            System.out.println(aresta);
-        }
+    private boolean noNaoEhIgualA(No_v2<Vertice<T>> no, Vertice<T> vertice){
+        Vertice<T> verticeTemp = no.getValor();
+        return !verticeTemp.getValor().equals(vertice.getValor());
     }
 
     @Override

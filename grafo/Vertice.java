@@ -35,4 +35,9 @@ public class Vertice<T> {
         }
         return v;
     }
+
+    @Override
+    public String toString() {
+        return this.valor.toString();
+    }
 }
